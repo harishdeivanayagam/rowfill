@@ -153,7 +153,7 @@ services:
 
 
   weaviate:
-    image: semitechnologies/weaviate:1.28.3
+    image: semitechnologies/weaviate:1.39.13
     ports:
       - "8080:8080"
     environment:
@@ -161,7 +161,6 @@ services:
       - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
       - PERSISTENCE_DATA_PATH=/var/lib/weaviate
       - CLUSTER_HOSTNAME=node1
-      - CLUSTER_GOSSIP_BIND_PORT=0
     volumes:
       - weaviate_data:/var/lib/weaviate
     networks:

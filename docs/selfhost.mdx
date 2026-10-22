@@ -64,6 +64,10 @@ This command will:
 - Start all three system components
 - Configure networking between services
 
+## Upgrading Weaviate
+
+Weaviate stores its data in the `weaviate_data` volume and supports upgrading one minor version at a time. If you already run Rowfill with an older Weaviate image (for example `1.28.x`), step through each intermediate minor version (`1.29`, `1.30`, ... `1.38`) before starting `1.39.13`, and back up the volume first. See the [Weaviate migration guide](https://docs.weaviate.io/deploy/migration).
+
 ## Verification
 
 To verify your installation:
