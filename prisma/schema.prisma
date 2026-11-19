@@ -98,3 +98,9 @@ model Column {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
+
+// Paddle event ids already applied, so a redelivered event is not applied twice.
+model ProcessedWebhookEvent {
+  id        String   @id
+  createdAt DateTime @default(now())
+}

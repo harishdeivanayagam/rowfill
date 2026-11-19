@@ -81,3 +81,7 @@ For early access, [contact us](mailto:support@rowfill.com)
 <div align="center">
   <p>Built with ❤️ for business folks</p>
 </div>
+
+## Webhook concurrency test
+
+Payment providers can deliver webhook events late, twice, or out of order. `npm run test:race` runs the webhook's database writes in every possible order on a real Postgres with [VibeRaven](https://viberaven.dev) (`npx -y viberaven race`) and fails if any order breaks the rule in `race/webhook.race.json`. It also runs in `npm test`. Add a rule there when you add a webhook handler.

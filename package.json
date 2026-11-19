@@ -6,7 +6,9 @@
     "build:app": "next build",
     "build:server": "tsc --build tsconfig.server.json && tsc-alias --project tsconfig.server.json",
     "start:app": "next start",
-    "start:scheduled": "node -r ./tsconfig-paths-bootstrap.js dist/scheduled.js"
+    "start:scheduled": "node -r ./tsconfig-paths-bootstrap.js dist/scheduled.js",
+    "test:race": "npx -y viberaven@1.10.0 race . --spec race/webhook.race.json --migrations race",
+    "test": "npm run test:race"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.723.0",

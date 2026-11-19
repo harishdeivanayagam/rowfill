@@ -1,0 +1,21 @@
+{
+  "rule": "A redelivered Paddle transaction.completed event adds the credits once",
+  "setup": "INSERT INTO \"Billing\"(\"organizationId\",credits) VALUES ('org_1',1000)",
+  "invariant": "SELECT credits <= 1500 FROM \"Billing\" WHERE \"organizationId\"='org_1'",
+  "isolation": [
+    "read committed"
+  ],
+  "notes": "SQL transliteration of the webhook handler; covers bounded SQL orders only, not HTTP or Stripe.",
+  "requests": [
+    {
+      "statements": [
+        "WITH c AS (INSERT INTO \"ProcessedWebhookEvent\"(id) VALUES ('evt_1') ON CONFLICT DO NOTHING RETURNING id) UPDATE \"Billing\" SET credits=credits+500 WHERE \"organizationId\"='org_1' AND EXISTS (SELECT 1 FROM c)"
+      ]
+    },
+    {
+      "statements": [
+        "WITH c AS (INSERT INTO \"ProcessedWebhookEvent\"(id) VALUES ('evt_1') ON CONFLICT DO NOTHING RETURNING id) UPDATE \"Billing\" SET credits=credits+500 WHERE \"organizationId\"='org_1' AND EXISTS (SELECT 1 FROM c)"
+      ]
+    }
+  ]
+}
