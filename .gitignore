@@ -50,3 +50,6 @@ protected-docker-compose-cloud.yml
 
 # production server
 /dist
+
+# VibeRaven race output
+.viberaven/

@@ -52,36 +52,43 @@ export async function POST(request: NextRequest) {
                 await paddle.subscriptions.cancel(billing.subscriptionId, { effectiveFrom: "immediately" })
             }
 
-            // Handle Pro Plan
-            if (priceId === process.env.PRO_PLAN_PRICE_ID_MONTHLY || priceId === process.env.PRO_PLAN_PRICE_ID_YEARLY) {
-                await prisma.billing.update({
-                    where: {
-                        organizationId: billing.organizationId
-                    },
-                    data: {
-                        plan: "PRO",
-                        credits: {
-                            increment: parseInt(process.env.PRO_PLAN_CREDITS || "0")
-                        },
-                        subscriptionId: event.data.subscriptionId,
-                        expiresAt: new Date(event.data.billingPeriod?.endsAt || "")
-                    }
-                })
-            }
+            // Paddle redelivers events. Claim the event id and grant in one transaction,
+            // so a second delivery of the same event adds nothing.
+            await prisma.$transaction(async (tx) => {
+                const claimed = await tx.$executeRaw`INSERT INTO "ProcessedWebhookEvent" (id) VALUES (${event.eventId}) ON CONFLICT DO NOTHING`
+                if (claimed === 0) return
 
-            // Handle Additional Credits
-            if (priceId === process.env.ADDITIONAL_CREDITS_PRICE_ID) {
-                await prisma.billing.update({
-                    where: {
-                        organizationId: billing.organizationId
-                    },
-                    data: {
-                        credits: {
-                            increment: parseInt(process.env.ADDITIONAL_CREDITS_QTY || "0")
+                // Handle Pro Plan
+                if (priceId === process.env.PRO_PLAN_PRICE_ID_MONTHLY || priceId === process.env.PRO_PLAN_PRICE_ID_YEARLY) {
+                    await tx.billing.update({
+                        where: {
+                            organizationId: billing.organizationId
+                        },
+                        data: {
+                            plan: "PRO",
+                            credits: {
+                                increment: parseInt(process.env.PRO_PLAN_CREDITS || "0")
+                            },
+                            subscriptionId: event.data.subscriptionId,
+                            expiresAt: new Date(event.data.billingPeriod?.endsAt || "")
                         }
-                    }
-                })
-            }
+                    })
+                }
+
+                // Handle Additional Credits
+                if (priceId === process.env.ADDITIONAL_CREDITS_PRICE_ID) {
+                    await tx.billing.update({
+                        where: {
+                            organizationId: billing.organizationId
+                        },
+                        data: {
+                            credits: {
+                                increment: parseInt(process.env.ADDITIONAL_CREDITS_QTY || "0")
+                            }
+                        }
+                    })
+                }
+            })
         }
 
         if (event && (event.eventType === EventName.SubscriptionCanceled || event.eventType === EventName.SubscriptionPastDue)) {
